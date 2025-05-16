@@ -89,6 +89,7 @@
   </style>
 </head>
 <body>
+  <!-- HOME PAGE -->
   <div class="container" id="mainContainer">
     <h1>PhysicsIz</h1>
     <div class="subtitle">A cool collection of interactive physics simulations and games. Pick one to start exploring!</div>
@@ -103,17 +104,30 @@
         <div class="card-title">Pendulum</div>
         <div class="card-desc">See a swinging pendulum and play with its physics!</div>
       </div>
+      <div class="card" onclick="showSim('projectile')">
+        <div class="card-icon">🎯</div>
+        <div class="card-title">Projectile Motion</div>
+        <div class="card-desc">Launch a ball and see its parabolic path under gravity.</div>
+      </div>
+      <div class="card" onclick="showSim('spring')">
+        <div class="card-icon">🌀</div>
+        <div class="card-title">Spring Oscillator</div>
+        <div class="card-desc">Play with a mass on a spring and watch it bounce!</div>
+      </div>
       <!-- Add more cards for new simulations/games here -->
     </div>
   </div>
 
-  <!-- Example Simulations (hidden by default) -->
+  <!-- SIMULATIONS -->
+  <!-- Bouncing Ball -->
   <div class="container" id="bouncingBallSim" style="display:none;">
     <h1>Bouncing Ball</h1>
     <canvas id="ballCanvas" width="420" height="260"></canvas>
     <div style="margin:1rem 0;color:#c9d6ff;">Click the canvas to kick the ball!</div>
     <button class="back-btn" onclick="goHome()">← Back to Hub</button>
   </div>
+
+  <!-- Pendulum -->
   <div class="container" id="pendulumSim" style="display:none;">
     <h1>Pendulum</h1>
     <canvas id="pendulumCanvas" width="420" height="320"></canvas>
@@ -121,24 +135,52 @@
     <button class="back-btn" onclick="goHome()">← Back to Hub</button>
   </div>
 
+  <!-- Projectile Motion -->
+  <div class="container" id="projectileSim" style="display:none;">
+    <h1>Projectile Motion</h1>
+    <canvas id="projectileCanvas" width="420" height="260"></canvas>
+    <div style="margin:1rem 0;color:#c9d6ff;">
+      Drag and release the ball to set launch angle and power.<br>
+      <button class="back-btn" onclick="goHome()">← Back to Hub</button>
+    </div>
+  </div>
+
+  <!-- Spring Oscillator -->
+  <div class="container" id="springSim" style="display:none;">
+    <h1>Spring Oscillator</h1>
+    <canvas id="springCanvas" width="420" height="260"></canvas>
+    <div style="margin:1rem 0;color:#c9d6ff;">
+      Drag the mass and release to set it bouncing.<br>
+      <button class="back-btn" onclick="goHome()">← Back to Hub</button>
+    </div>
+  </div>
+
   <script>
-    // Navigation logic
+    // NAVIGATION LOGIC
     function showSim(sim) {
       document.getElementById('mainContainer').style.display = 'none';
       document.getElementById('bouncingBallSim').style.display = sim === 'bouncingBall' ? 'block' : 'none';
       document.getElementById('pendulumSim').style.display = sim === 'pendulum' ? 'block' : 'none';
+      document.getElementById('projectileSim').style.display = sim === 'projectile' ? 'block' : 'none';
+      document.getElementById('springSim').style.display = sim === 'spring' ? 'block' : 'none';
       if (sim === 'bouncingBall') startBallSim();
       if (sim === 'pendulum') startPendulumSim();
+      if (sim === 'projectile') startProjectileSim();
+      if (sim === 'spring') startSpringSim();
     }
     function goHome() {
       document.getElementById('mainContainer').style.display = '';
       document.getElementById('bouncingBallSim').style.display = 'none';
       document.getElementById('pendulumSim').style.display = 'none';
+      document.getElementById('projectileSim').style.display = 'none';
+      document.getElementById('springSim').style.display = 'none';
       stopBallSim();
       stopPendulumSim();
+      stopProjectileSim();
+      stopSpringSim();
     }
 
-    // Bouncing Ball Simulation
+    // BOUNCING BALL SIMULATION
     let ballAnim;
     function startBallSim() {
       const canvas = document.getElementById('ballCanvas');
@@ -152,7 +194,7 @@
         ctx.shadowColor = '#fff9';
         ctx.shadowBlur = 10;
         ctx.fill();
-        ctx.shadowBlur = 0; 
+        ctx.shadowBlur = 0;
         ctx.closePath();
       }
       function update() {
@@ -178,14 +220,14 @@
     }
     function stopBallSim() { cancelAnimationFrame(ballAnim); }
 
-    // Pendulum Simulation
+    // PENDULUM SIMULATION
     let pendulumAnim, dragging=false;
     function startPendulumSim() {
       const canvas = document.getElementById('pendulumCanvas');
       const ctx = canvas.getContext('2d');
       let origin = {x:canvas.width/2, y:60};
       let length = 180;
-      let angle = Math.PI/4; // 45 deg
+      let angle = Math.PI/4;
       let aVel = 0, aAcc = 0;
       const gravity = 0.017;
       function drawPendulum() {
@@ -237,6 +279,135 @@
       animate();
     }
     function stopPendulumSim() { cancelAnimationFrame(pendulumAnim); }
+
+    // PROJECTILE MOTION SIMULATION
+    let projectileAnim, projectileLaunched = false;
+    function startProjectileSim() {
+      const canvas = document.getElementById('projectileCanvas');
+      const ctx = canvas.getContext('2d');
+      let ball = { x: 60, y: canvas.height - 30, vx: 0, vy: 0, r: 14, color:'#00eaff' };
+      let isDragging = false, startX, startY;
+      const gravity = 0.43;
+      function drawBall() {
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.r, 0, 2*Math.PI);
+        ctx.fillStyle = ball.color;
+        ctx.shadowColor = '#fff9';
+        ctx.shadowBlur = 8;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.closePath();
+      }
+      function animate() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        // Draw ground
+        ctx.fillStyle = "#5fc96b";
+        ctx.fillRect(0, canvas.height-16, canvas.width, 20);
+        drawBall();
+        if (projectileLaunched) {
+          ball.vy += gravity;
+          ball.x += ball.vx;
+          ball.y += ball.vy;
+          if (ball.y + ball.r > canvas.height-16) {
+            ball.y = canvas.height-16 - ball.r;
+            ball.vy *= -0.5;
+            ball.vx *= 0.6;
+            if (Math.abs(ball.vy) < 1) ball.vy = 0;
+          }
+          if (ball.x > canvas.width+50 || ball.x < -50) {
+            projectileLaunched = false;
+          }
+        }
+        projectileAnim = requestAnimationFrame(animate);
+      }
+      canvas.onmousedown = function(e) {
+        if (!projectileLaunched) {
+          isDragging = true;
+          const rect = canvas.getBoundingClientRect();
+          startX = e.clientX - rect.left;
+          startY = e.clientY - rect.top;
+          ball.x = startX; ball.y = startY;
+        }
+      };
+      canvas.onmousemove = function(e) {
+        if (isDragging) {
+          const rect = canvas.getBoundingClientRect();
+          ball.x = e.clientX - rect.left;
+          ball.y = e.clientY - rect.top;
+        }
+      };
+      canvas.onmouseup = function(e) {
+        if (isDragging) {
+          isDragging = false;
+          const rect = canvas.getBoundingClientRect();
+          let dx = (startX - (e.clientX - rect.left))/6;
+          let dy = (startY - (e.clientY - rect.top))/6;
+          ball.vx = dx; ball.vy = dy;
+          projectileLaunched = true;
+        }
+      };
+      projectileLaunched = false;
+      ball.x = 60; ball.y = canvas.height-30; ball.vx = 0; ball.vy = 0;
+      animate();
+    }
+    function stopProjectileSim() { cancelAnimationFrame(projectileAnim); }
+
+    // SPRING OSCILLATOR SIMULATION
+    let springAnim, springDragging = false;
+    function startSpringSim() {
+      const canvas = document.getElementById('springCanvas');
+      const ctx = canvas.getContext('2d');
+      let anchorY = 30, massY = 180, velocity = 0, springLength = 120, mass = 1.5, k = 0.06, damping = 0.995;
+      function drawSpring() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        // Spring
+        ctx.beginPath();
+        ctx.moveTo(canvas.width/2, anchorY);
+        for (let i=0; i<10; i++) {
+          let dx = (i%2===0? -16 : 16);
+          let dy = anchorY + (massY-anchorY)*i/10;
+          ctx.lineTo(canvas.width/2 + dx, dy);
+        }
+        ctx.lineTo(canvas.width/2, massY);
+        ctx.strokeStyle = "#00eaff";
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        // Mass
+        ctx.beginPath();
+        ctx.arc(canvas.width/2, massY, 22, 0, 2*Math.PI);
+        ctx.fillStyle = "#ffa940";
+        ctx.shadowColor = "#fff7"; ctx.shadowBlur = 10;
+        ctx.fill(); ctx.shadowBlur = 0;
+        ctx.closePath();
+      }
+      function animate() {
+        if (!springDragging) {
+          let force = -k * (massY - (anchorY+springLength));
+          let acc = force / mass;
+          velocity += acc;
+          velocity *= damping;
+          massY += velocity;
+        }
+        drawSpring();
+        springAnim = requestAnimationFrame(animate);
+      }
+      canvas.onmousedown = function(e) {
+        const rect = canvas.getBoundingClientRect();
+        let mx = e.clientX - rect.left, my = e.clientY - rect.top;
+        if (Math.abs(mx-canvas.width/2)<30 && Math.abs(my-massY)<30) springDragging=true;
+      };
+      canvas.onmousemove = function(e) {
+        if (springDragging) {
+          const rect = canvas.getBoundingClientRect();
+          let my = e.clientY - rect.top;
+          massY = Math.max(anchorY+30, Math.min(my, canvas.height-30));
+          velocity = 0;
+        }
+      };
+      canvas.onmouseup = canvas.onmouseleave = function() { springDragging=false; };
+      animate();
+    }
+    function stopSpringSim() { cancelAnimationFrame(springAnim); }
   </script>
 </body>
 </html>
