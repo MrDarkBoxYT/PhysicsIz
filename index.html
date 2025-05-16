@@ -2,202 +2,544 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PhysicsIz - Physics Simulations & Games</title>
+  <title>PhysicsIz - Interactive Physics Simulations & Games</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Google Fonts for a modern look -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --accent: #00eaff;
+      --accent2: #ff4081;
+      --bg: #11172b;
+      --glass: rgba(30,40,60,0.6);
+      --glass-light: rgba(255,255,255,0.18);
+      --text: #f3f6ff;
+      --text2: #9cc6ff;
+      --shadow: 0 4px 32px #002a;
+      --card-shadow: 0 2px 14px #0039;
+      --border-radius: 18px;
+      --transition: 0.18s cubic-bezier(.4,1,.4,1);
+    }
+    [data-theme='light'] {
+      --bg: #eaf4ff;
+      --glass: rgba(255,255,255,0.82);
+      --glass-light: rgba(0,0,0,0.08);
+      --text: #0a1a2b;
+      --text2: #2c5a7b;
+      --shadow: 0 4px 32px #b8d1ff;
+      --card-shadow: 0 2px 14px #c7e6ff;
+    }
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Montserrat', 'Roboto', Arial, sans-serif;
+      transition: background 0.25s, color 0.25s;
+    }
     body {
       min-height: 100vh;
-      margin: 0;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: linear-gradient(120deg, #1e3c72, #2a5298 90%);
-      color: #fff;
+      position: relative;
+      overflow-x: hidden;
+    }
+    .animated-bg {
+      position: fixed;
+      top:0; left:0;
+      width:100vw; height:100vh;
+      z-index: -1;
+      pointer-events: none;
     }
     .container {
-      max-width: 900px;
+      max-width: 1100px;
       margin: 0 auto;
-      padding: 2rem;
+      padding: 2rem 5vw 5rem 5vw;
       text-align: center;
     }
     h1 {
-      font-size: 3rem;
+      font-size: 3.2rem;
+      font-weight: 700;
+      margin: 0 0 1rem 0;
       letter-spacing: 2px;
-      margin-bottom: 0.7rem;
-      text-shadow: 2px 2px 10px #000a;
+      text-shadow: 2px 2px 12px #0117;
     }
     .subtitle {
-      color: #c9d6ff;
-      font-size: 1.3rem;
+      color: var(--text2);
+      font-size: 1.19rem;
       margin-bottom: 2.5rem;
+      letter-spacing: 0.5px;
     }
     .card-grid {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       gap: 2rem;
-      margin-bottom: 3rem;
+      margin-bottom: 3.5rem;
+      margin-top: 2rem;
     }
     .card {
-      background: rgba(30,60,120,0.6);
-      border-radius: 18px;
-      box-shadow: 0 4px 24px #0004;
-      width: 230px;
-      padding: 1.4rem 1rem;
+      background: var(--glass);
+      border: 1px solid var(--glass-light);
+      border-radius: var(--border-radius);
+      box-shadow: var(--card-shadow);
+      width: 250px;
+      min-height: 210px;
+      padding: 1.7rem 1.2rem 1.1rem 1.2rem;
       cursor: pointer;
-      transition: transform 0.13s, box-shadow 0.13s;
+      transition: transform var(--transition), box-shadow var(--transition), background 0.3s;
       display: flex;
       flex-direction: column;
       align-items: center;
+      backdrop-filter: blur(8px) saturate(1.3);
+      position: relative;
+      overflow: hidden;
     }
-    .card:hover {
-      transform: translateY(-8px) scale(1.04);
-      box-shadow: 0 10px 32px #001a;
-      background: rgba(60,110,200,0.85);
+    .card:hover, .card:focus-visible {
+      transform: translateY(-10px) scale(1.04);
+      box-shadow: 0 10px 40px #001a;
+      background: linear-gradient(135deg, var(--glass), var(--accent2) 110%);
     }
     .card-icon {
-      font-size: 2.7rem;
-      margin-bottom: 1rem;
+      font-size: 2.9rem;
+      margin-bottom: 1.2rem;
+      filter: drop-shadow(0 2px 8px var(--accent));
     }
     .card-title {
-      font-size: 1.2rem;
+      font-size: 1.22rem;
       font-weight: bold;
+      color: var(--accent);
       margin-bottom: 0.5rem;
+      letter-spacing: 0.5px;
     }
     .card-desc {
       font-size: 1rem;
-      color: #e0e7ff;
+      color: var(--text2);
+      margin-bottom: 0.5rem;
     }
-    .back-btn {
-      background: #1e90ff;
+    .settings-btn, .back-btn, .mode-btn {
+      background: var(--accent);
       color: #fff;
       border: none;
       border-radius: 8px;
-      padding: 0.7rem 1.7rem;
-      font-size: 1.1rem;
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
       cursor: pointer;
       box-shadow: 0 2px 8px #0003;
-      margin: 2rem 0;
-      transition: background 0.2s;
+      margin: 1.2rem 0.5rem 0 0.5rem;
+      transition: background 0.18s;
+      outline: none;
     }
-    .back-btn:hover {
-      background: #0074d9;
+    .settings-btn:hover, .back-btn:hover, .mode-btn:hover {
+      background: var(--accent2);
+    }
+    .settings-panel {
+      background: var(--glass);
+      border: 1px solid var(--glass-light);
+      border-radius: 15px;
+      box-shadow: 0 2px 22px #002c;
+      padding: 1.2rem 2rem 1.5rem 2rem;
+      margin: 1.3rem auto 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 340px;
+      font-size: 1.01rem;
+    }
+    .settings-panel label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 0.85rem;
+      font-family: 'Roboto', sans-serif;
+      color: var(--text2);
+    }
+    .settings-panel input[type="range"] {
+      width: 90px;
+      accent-color: var(--accent2);
+    }
+    canvas {
+      background: var(--glass);
+      border-radius: 13px;
+      margin: 1.4rem auto 0.6rem auto;
+      display: block;
+      box-shadow: 0 2px 22px #0027;
+      border: 1px solid var(--glass-light);
+      transition: box-shadow 0.2s;
+    }
+    .canvas-desc {
+      margin:1rem 0 0.3rem 0;
+      color: var(--text2);
+      font-size: 1.06rem;
+    }
+    .footer {
+      width: 100vw;
+      text-align: center;
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      padding: 0.7rem 0 0.7rem 0;
+      background: rgba(8,16,32,0.16);
+      color: var(--text2);
+      font-size: 0.98rem;
+      z-index: 20;
+      letter-spacing: 0.1em;
+      user-select: none;
+    }
+    .footer a { color: var(--accent2); text-decoration: none; font-weight: 500; }
+    /* Modal for settings */
+    .modal-bg {
+      position: fixed;
+      top:0; left:0; width:100vw; height:100vh;
+      background: rgba(10,18,32,0.44);
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.22s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; } to { opacity: 1; }
+    }
+    .modal-content {
+      background: var(--glass);
+      border-radius: 18px;
+      border: 1px solid var(--glass-light);
+      box-shadow: var(--shadow);
+      padding: 2rem 2.2rem 2rem 2.2rem;
+      max-width: 400px;
+      min-width: 250px;
+      animation: popIn 0.25s;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
     }
     /* Responsive */
-    @media (max-width: 650px) {
-      .card-grid { flex-direction: column; gap: 1.3rem; }
-      .card { width: 98vw; }
+    @media (max-width: 800px) {
+      .container { padding-left: 2vw; padding-right: 2vw; }
+      h1 { font-size: 2.1rem; }
+      .card { width: 93vw; min-height: 165px; }
+      .modal-content { padding: 1.1rem 0.5rem 1.3rem 0.5rem; }
     }
   </style>
 </head>
 <body>
-  <!-- HOME PAGE -->
+  <!-- Animated Background -->
+  <canvas class="animated-bg" id="bgAnimCanvas"></canvas>
+  <!-- Main Hub -->
   <div class="container" id="mainContainer">
     <h1>PhysicsIz</h1>
-    <div class="subtitle">A cool collection of interactive physics simulations and games. Pick one to start exploring!</div>
+    <div class="subtitle">The ultimate collection of interactive physics simulations and games. <br>
+      Dive into the world of motion, gravity, and energy!</div>
+    <button class="mode-btn" onclick="toggleTheme()" id="modeBtn" aria-label="Toggle dark/light mode">🌙</button>
     <div class="card-grid" id="cardGrid">
-      <div class="card" onclick="showSim('bouncingBall')">
+      <div class="card" onclick="showSim('bouncingBall')" tabindex="0">
         <div class="card-icon">🏀</div>
         <div class="card-title">Bouncing Ball</div>
-        <div class="card-desc">Watch and interact with a bouncing ball demo with real gravity and bounces.</div>
+        <div class="card-desc">Gravity, friction, and bounces. Kick the ball, watch it move!</div>
       </div>
-      <div class="card" onclick="showSim('pendulum')">
+      <div class="card" onclick="showSim('pendulum')" tabindex="0">
         <div class="card-icon">🕰️</div>
         <div class="card-title">Pendulum</div>
-        <div class="card-desc">See a swinging pendulum and play with its physics!</div>
+        <div class="card-desc">Classic swinging pendulum. Drag and set it in motion!</div>
       </div>
-      <div class="card" onclick="showSim('projectile')">
+      <div class="card" onclick="showSim('projectile')" tabindex="0">
         <div class="card-icon">🎯</div>
         <div class="card-title">Projectile Motion</div>
-        <div class="card-desc">Launch a ball and see its parabolic path under gravity.</div>
+        <div class="card-desc">Launch a ball and see its parabolic flight path.</div>
       </div>
-      <div class="card" onclick="showSim('spring')">
+      <div class="card" onclick="showSim('spring')" tabindex="0">
         <div class="card-icon">🌀</div>
         <div class="card-title">Spring Oscillator</div>
-        <div class="card-desc">Play with a mass on a spring and watch it bounce!</div>
+        <div class="card-desc">Spring-mass system. Drag and watch it bounce!</div>
       </div>
-      <!-- Add more cards for new simulations/games here -->
+      <div class="card" onclick="showSim('gravity')" tabindex="0">
+        <div class="card-icon">🪐</div>
+        <div class="card-title">Gravity Simulator</div>
+        <div class="card-desc">Planets orbiting with gravity. Add/move planets!</div>
+      </div>
+      <div class="card" onclick="showSim('breakout')" tabindex="0">
+        <div class="card-icon">🧱</div>
+        <div class="card-title">Breakout Game</div>
+        <div class="card-desc">Classic Breakout. Physics & fun. Can you win?</div>
+      </div>
     </div>
   </div>
 
-  <!-- SIMULATIONS -->
+  <!-- Simulations (hidden by default) -->
   <!-- Bouncing Ball -->
   <div class="container" id="bouncingBallSim" style="display:none;">
     <h1>Bouncing Ball</h1>
-    <canvas id="ballCanvas" width="420" height="260"></canvas>
-    <div style="margin:1rem 0;color:#c9d6ff;">Click the canvas to kick the ball!</div>
+    <canvas id="ballCanvas" width="440" height="270"></canvas>
+    <div class="canvas-desc">Click to kick the ball! Gravity and friction are adjustable.</div>
+    <button class="settings-btn" onclick="openSettings('bouncingBall')">⚙️ Settings</button>
     <button class="back-btn" onclick="goHome()">← Back to Hub</button>
   </div>
-
   <!-- Pendulum -->
   <div class="container" id="pendulumSim" style="display:none;">
     <h1>Pendulum</h1>
-    <canvas id="pendulumCanvas" width="420" height="320"></canvas>
-    <div style="margin:1rem 0;color:#c9d6ff;">Drag the pendulum bob to start swinging.</div>
+    <canvas id="pendulumCanvas" width="440" height="320"></canvas>
+    <div class="canvas-desc">Drag the bob to set it swinging.</div>
+    <button class="settings-btn" onclick="openSettings('pendulum')">⚙️ Settings</button>
     <button class="back-btn" onclick="goHome()">← Back to Hub</button>
   </div>
-
   <!-- Projectile Motion -->
   <div class="container" id="projectileSim" style="display:none;">
     <h1>Projectile Motion</h1>
-    <canvas id="projectileCanvas" width="420" height="260"></canvas>
-    <div style="margin:1rem 0;color:#c9d6ff;">
-      Drag and release the ball to set launch angle and power.<br>
-      <button class="back-btn" onclick="goHome()">← Back to Hub</button>
-    </div>
+    <canvas id="projectileCanvas" width="440" height="270"></canvas>
+    <div class="canvas-desc">Drag and release the ball to set launch angle and power.</div>
+    <button class="settings-btn" onclick="openSettings('projectile')">⚙️ Settings</button>
+    <button class="back-btn" onclick="goHome()">← Back to Hub</button>
   </div>
-
   <!-- Spring Oscillator -->
   <div class="container" id="springSim" style="display:none;">
     <h1>Spring Oscillator</h1>
-    <canvas id="springCanvas" width="420" height="260"></canvas>
-    <div style="margin:1rem 0;color:#c9d6ff;">
-      Drag the mass and release to set it bouncing.<br>
-      <button class="back-btn" onclick="goHome()">← Back to Hub</button>
+    <canvas id="springCanvas" width="440" height="270"></canvas>
+    <div class="canvas-desc">Drag the mass and release to bounce the spring.</div>
+    <button class="settings-btn" onclick="openSettings('spring')">⚙️ Settings</button>
+    <button class="back-btn" onclick="goHome()">← Back to Hub</button>
+  </div>
+  <!-- Gravity Simulator -->
+  <div class="container" id="gravitySim" style="display:none;">
+    <h1>Gravity Simulator</h1>
+    <canvas id="gravityCanvas" width="520" height="370"></canvas>
+    <div class="canvas-desc">Click to add planets. Drag to move. Watch gravity in action!</div>
+    <button class="settings-btn" onclick="openSettings('gravity')">⚙️ Settings</button>
+    <button class="back-btn" onclick="goHome()">← Back to Hub</button>
+  </div>
+  <!-- Breakout Game -->
+  <div class="container" id="breakoutSim" style="display:none;">
+    <h1>Breakout Game</h1>
+    <canvas id="breakoutCanvas" width="440" height="320"></canvas>
+    <div class="canvas-desc">Use mouse or touch to move paddle. Break all the bricks!</div>
+    <button class="settings-btn" onclick="openSettings('breakout')">⚙️ Settings</button>
+    <button class="back-btn" onclick="goHome()">← Back to Hub</button>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="modalBg" class="modal-bg" style="display:none;" onclick="closeSettings(event)">
+    <div id="modalContent" class="modal-content" onclick="event.stopPropagation()">
+      <!-- Settings will be injected here -->
     </div>
   </div>
 
+  <!-- Footer -->
+  <div class="footer">
+    PhysicsIz &copy; 2025 &mdash; by <a href="https://github.com/MrDarkBoxYT" target="_blank">MrDarkBoxYT</a> | Powered by JavaScript &amp; HTML5 Canvas
+  </div>
+
+  <!-- Main JavaScript: SPA, Simulations, UI, Settings -->
   <script>
-    // NAVIGATION LOGIC
+    // === Modern UI: Theme Toggle ===
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      document.getElementById('modeBtn').textContent = theme === "light" ? "🌞" : "🌙";
+      localStorage.setItem('theme', theme);
+    }
+    function toggleTheme() {
+      const cur = document.documentElement.getAttribute('data-theme') || "dark";
+      setTheme(cur === "dark" ? "light" : "dark");
+    }
+    (() => {
+      // Init theme from localStorage or system preference
+      const userTheme = localStorage.getItem('theme');
+      if (userTheme) setTheme(userTheme);
+      else if (window.matchMedia('(prefers-color-scheme: light)').matches) setTheme("light");
+      else setTheme("dark");
+    })();
+
+    // === Animated Glassy Background ===
+    (() => {
+      const canvas = document.getElementById('bgAnimCanvas');
+      let w = window.innerWidth, h = window.innerHeight;
+      canvas.width = w; canvas.height = h;
+      let ctx = canvas.getContext('2d');
+      window.addEventListener('resize', () => {
+        w = window.innerWidth; h = window.innerHeight;
+        canvas.width = w; canvas.height = h;
+      });
+      let bubbles = [];
+      for(let i=0;i<30;i++) {
+        bubbles.push({
+          x: Math.random()*w,
+          y: Math.random()*h,
+          r: Math.random()*48+16,
+          dx: (Math.random()-0.5)*0.5,
+          dy: (Math.random()-0.5)*0.4,
+          hue: Math.random()*360
+        });
+      }
+      function draw() {
+        ctx.clearRect(0,0,w,h);
+        for(let b of bubbles) {
+          ctx.beginPath();
+          ctx.arc(b.x, b.y, b.r, 0, 2*Math.PI);
+          ctx.fillStyle = `hsla(${b.hue}, 80%, 60%, 0.12)`;
+          ctx.fill();
+          ctx.strokeStyle = `hsla(${b.hue}, 100%, 55%, 0.21)`;
+          ctx.lineWidth = 3;
+          ctx.stroke();
+          b.x += b.dx; b.y += b.dy; b.hue += 0.08;
+          if(b.x < -50) b.x = w+50;
+          if(b.x > w+50) b.x = -50;
+          if(b.y < -50) b.y = h+50;
+          if(b.y > h+50) b.y = -50;
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+
+    // === SPA-Like Navigation ===
+    let currentSim = null;
     function showSim(sim) {
       document.getElementById('mainContainer').style.display = 'none';
-      document.getElementById('bouncingBallSim').style.display = sim === 'bouncingBall' ? 'block' : 'none';
-      document.getElementById('pendulumSim').style.display = sim === 'pendulum' ? 'block' : 'none';
-      document.getElementById('projectileSim').style.display = sim === 'projectile' ? 'block' : 'none';
-      document.getElementById('springSim').style.display = sim === 'spring' ? 'block' : 'none';
+      for (const name of ['bouncingBall','pendulum','projectile','spring','gravity','breakout']) {
+        document.getElementById(name+'Sim').style.display = sim === name ? 'block' : 'none';
+      }
+      currentSim = sim;
+      startSim(sim);
+    }
+    function goHome() {
+      document.getElementById('mainContainer').style.display = '';
+      for (const name of ['bouncingBall','pendulum','projectile','spring','gravity','breakout'])
+        document.getElementById(name+'Sim').style.display = 'none';
+      stopAllSims();
+      closeSettings();
+      currentSim = null;
+    }
+
+    // === Settings Modal Logic ===
+    const defaultSettings = {
+      bouncingBall: {gravity:0.55, bounce:0.81, friction:0.991},
+      pendulum: {gravity:0.017, damping:0.995, length:180},
+      projectile: {gravity:0.43, bounciness:0.5},
+      spring: {k:0.06, damping:0.995, springLength:120},
+      gravity: {G:0.17, trail:1},
+      breakout: {ballSpeed:4.7, paddleWidth:90}
+    };
+    let simSettings = JSON.parse(JSON.stringify(defaultSettings));
+    function openSettings(sim) {
+      let html = '';
+      if (sim === 'bouncingBall') {
+        html = `<h2 style="color:var(--accent)">🏀 Bouncing Ball Settings</h2>
+          <div class="settings-panel">
+            <label>Gravity <input type="range" min="0.1" max="1.2" step="0.01" value="${simSettings.bouncingBall.gravity}"
+                oninput="simSettings.bouncingBall.gravity=+this.value;this.nextElementSibling.textContent=this.value">
+                <span>${simSettings.bouncingBall.gravity}</span></label>
+            <label>Bounce <input type="range" min="0.5" max="1" step="0.01" value="${simSettings.bouncingBall.bounce}"
+                oninput="simSettings.bouncingBall.bounce=+this.value;this.nextElementSibling.textContent=this.value">
+                <span>${simSettings.bouncingBall.bounce}</span></label>
+            <label>Friction <input type="range" min="0.95" max="1" step="0.001" value="${simSettings.bouncingBall.friction}"
+                oninput="simSettings.bouncingBall.friction=+this.value;this.nextElementSibling.textContent=this.value">
+                <span>${simSettings.bouncingBall.friction}</span></label>
+            <button class="settings-btn" onclick="resetSimSettings('bouncingBall')">Reset to Default</button>
+          </div>`;
+      } else if (sim === 'pendulum') {
+        html = `<h2 style="color:var(--accent)">🕰️ Pendulum Settings</h2>
+          <div class="settings-panel">
+            <label>Gravity <input type="range" min="0.005" max="0.04" step="0.001" value="${simSettings.pendulum.gravity}"
+                oninput="simSettings.pendulum.gravity=+this.value;this.nextElementSibling.textContent=this.value">
+                <span>${simSettings.pendulum.gravity}</span></label>
+            <label>Damping <input type="range" min="0.97" max="1" step="0.001" value="${simSettings.pendulum.damping}"
+                oninput="simSettings.pendulum.damping=+this.value;this.nextElementSibling.textContent=this.value">
+                <span>${simSettings.pendulum.damping}</span></label>
+            <label>Rod Length <input type="range" min="80" max="260" step="1" value="${simSettings.pendulum.length}"
+                oninput="simSettings.pendulum.length=+this.value;this.nextElementSibling.textContent=this.value">
+                <span>${simSettings.pendulum.length}</span></label>
+            <button class="settings-btn" onclick="resetSimSettings('pendulum')">Reset to Default</button>
+          </div>`;
+      } else if (sim === 'projectile') {
+        html = `<h2 style="color:var(--accent)">🎯 Projectile Settings</h2>
+          <div class="settings-panel">
+            <label>Gravity <input type="range" min="0.1" max="1" step="0.01" value="${simSettings.projectile.gravity}"
+                oninput="simSettings.projectile.gravity=+this.value;this.nextElementSibling.textContent=this.value">
+                <span>${simSettings.projectile.gravity}</span></label>
+            <label>Bounciness <input type="range" min="0.1" max="0.9" step="0.01" value="${simSettings.projectile.bounciness}"
+                oninput="simSettings.projectile.bounciness=+this.value;this.nextElementSibling.textContent=this.value">
+                <span>${simSettings.projectile.bounciness}</span></label>
+            <button class="settings-btn" onclick="resetSimSettings('projectile')">Reset to Default</button>
+          </div>`;
+      } else if (sim === 'spring') {
+        html = `<h2 style="color:var(--accent)">🌀 Spring Settings</h2>
+          <div class="settings-panel">
+            <label>Spring Constant <input type="range" min="0.01" max="0.16" step="0.01" value="${simSettings.spring.k}"
+                oninput="simSettings.spring.k=+this.value;this.nextElementSibling.textContent=this.value">
+                <span>${simSettings.spring.k}</span></label>
+            <label>Damping <input type="range" min="0.95" max="1" step="0.001" value="${simSettings.spring.damping}"
+                oninput="simSettings.spring.damping=+this.value;this.nextElementSibling.textContent=this.value">
+                <span>${simSettings.spring.damping}</span></label>
+            <label>Rest Length <input type="range" min="60" max="220" step="1" value="${simSettings.spring.springLength}"
+                oninput="simSettings.spring.springLength=+this.value;this.nextElementSibling.textContent=this.value">
+                <span>${simSettings.spring.springLength}</span></label>
+            <button class="settings-btn" onclick="resetSimSettings('spring')">Reset to Default</button>
+          </div>`;
+      } else if (sim === 'gravity') {
+        html = `<h2 style="color:var(--accent)">🪐 Gravity Simulator</h2>
+          <div class="settings-panel">
+            <label>Gravity <input type="range" min="0.05" max="0.5" step="0.01" value="${simSettings.gravity.G}"
+                oninput="simSettings.gravity.G=+this.value;this.nextElementSibling.textContent=this.value">
+                <span>${simSettings.gravity.G}</span></label>
+            <label>Trail <input type="range" min="0" max="1" step="0.01" value="${simSettings.gravity.trail}"
+                oninput="simSettings.gravity.trail=+this.value;this.nextElementSibling.textContent=this.value">
+                <span>${simSettings.gravity.trail}</span></label>
+            <button class="settings-btn" onclick="resetSimSettings('gravity')">Reset to Default</button>
+          </div>`;
+      } else if (sim === 'breakout') {
+        html = `<h2 style="color:var(--accent)">🧱 Breakout Settings</h2>
+          <div class="settings-panel">
+            <label>Ball Speed <input type="range" min="2" max="8" step="0.1" value="${simSettings.breakout.ballSpeed}"
+                oninput="simSettings.breakout.ballSpeed=+this.value;this.nextElementSibling.textContent=this.value">
+                <span>${simSettings.breakout.ballSpeed}</span></label>
+            <label>Paddle Width <input type="range" min="44" max="160" step="1" value="${simSettings.breakout.paddleWidth}"
+                oninput="simSettings.breakout.paddleWidth=+this.value;this.nextElementSibling.textContent=this.value">
+                <span>${simSettings.breakout.paddleWidth}</span></label>
+            <button class="settings-btn" onclick="resetSimSettings('breakout')">Reset to Default</button>
+          </div>`;
+      }
+      document.getElementById('modalContent').innerHTML = html;
+      document.getElementById('modalBg').style.display = 'flex';
+    }
+    function closeSettings(e) {
+      if (e && e.target && e.target !== document.getElementById('modalBg')) return;
+      document.getElementById('modalBg').style.display = 'none';
+      if (currentSim) { stopAllSims(); startSim(currentSim); }
+    }
+    function resetSimSettings(sim) {
+      simSettings[sim] = JSON.parse(JSON.stringify(defaultSettings[sim]));
+      openSettings(sim);
+      if (currentSim) { stopAllSims(); startSim(currentSim); }
+    }
+
+    // === SPA - Sim Control ===
+    function startSim(sim) {
+      stopAllSims();
       if (sim === 'bouncingBall') startBallSim();
       if (sim === 'pendulum') startPendulumSim();
       if (sim === 'projectile') startProjectileSim();
       if (sim === 'spring') startSpringSim();
+      if (sim === 'gravity') startGravitySim();
+      if (sim === 'breakout') startBreakoutSim();
     }
-    function goHome() {
-      document.getElementById('mainContainer').style.display = '';
-      document.getElementById('bouncingBallSim').style.display = 'none';
-      document.getElementById('pendulumSim').style.display = 'none';
-      document.getElementById('projectileSim').style.display = 'none';
-      document.getElementById('springSim').style.display = 'none';
-      stopBallSim();
-      stopPendulumSim();
-      stopProjectileSim();
-      stopSpringSim();
+    function stopAllSims() {
+      stopBallSim(); stopPendulumSim(); stopProjectileSim(); stopSpringSim(); stopGravitySim(); stopBreakoutSim();
     }
 
-    // BOUNCING BALL SIMULATION
+    // === Sim 1: Bouncing Ball ===
     let ballAnim;
     function startBallSim() {
-      const canvas = document.getElementById('ballCanvas');
-      const ctx = canvas.getContext('2d');
-      let ball = {x: canvas.width/2, y: 60, vx: 3, vy: 0, r: 25, color:'#ffeb3b'};
-      const gravity = 0.55, bounce=0.81, friction=0.991;
+      const canvas = document.getElementById('ballCanvas'), ctx = canvas.getContext('2d');
+      let {gravity, bounce, friction} = simSettings.bouncingBall;
+      let ball = {x: canvas.width/2, y: 60, vx: 3, vy: 0, r: 27, color:'#ffeb3b'};
       function drawBall() {
         ctx.beginPath();
         ctx.arc(ball.x, ball.y, ball.r, 0, 2*Math.PI);
         ctx.fillStyle = ball.color;
-        ctx.shadowColor = '#fff9';
-        ctx.shadowBlur = 10;
-        ctx.fill();
-        ctx.shadowBlur = 0;
-        ctx.closePath();
+        ctx.shadowColor = '#fff9'; ctx.shadowBlur = 12;
+        ctx.fill(); ctx.shadowBlur = 0; ctx.closePath();
       }
       function update() {
+        ({gravity, bounce, friction} = simSettings.bouncingBall);
         ctx.clearRect(0,0,canvas.width,canvas.height);
         drawBall();
         ball.vy += gravity;
@@ -220,16 +562,13 @@
     }
     function stopBallSim() { cancelAnimationFrame(ballAnim); }
 
-    // PENDULUM SIMULATION
+    // === Sim 2: Pendulum ===
     let pendulumAnim, dragging=false;
     function startPendulumSim() {
-      const canvas = document.getElementById('pendulumCanvas');
-      const ctx = canvas.getContext('2d');
+      const canvas = document.getElementById('pendulumCanvas'), ctx = canvas.getContext('2d');
+      let {gravity, damping, length} = simSettings.pendulum;
       let origin = {x:canvas.width/2, y:60};
-      let length = 180;
-      let angle = Math.PI/4;
-      let aVel = 0, aAcc = 0;
-      const gravity = 0.017;
+      let angle = Math.PI/4, aVel = 0, aAcc = 0;
       function drawPendulum() {
         ctx.clearRect(0,0,canvas.width,canvas.height);
         let bobX = origin.x + length * Math.sin(angle);
@@ -245,15 +584,15 @@
         ctx.beginPath();
         ctx.arc(bobX, bobY, 22, 0, 2*Math.PI);
         ctx.fillStyle = "#ff4081";
-        ctx.shadowColor = '#fff7'; ctx.shadowBlur = 12;
-        ctx.fill(); ctx.shadowBlur=0;
-        ctx.closePath();
+        ctx.shadowColor = '#fff7'; ctx.shadowBlur = 14;
+        ctx.fill(); ctx.shadowBlur=0; ctx.closePath();
       }
       function animate() {
+        ({gravity, damping, length} = simSettings.pendulum);
         if (!dragging) {
           aAcc = (-gravity/length) * Math.sin(angle);
           aVel += aAcc;
-          aVel *= 0.995;
+          aVel *= damping;
           angle += aVel;
         }
         drawPendulum();
@@ -265,7 +604,7 @@
         bobX = origin.x + length * Math.sin(angle);
         bobY = origin.y + length * Math.cos(angle);
         let mx = e.clientX - rect.left, my = e.clientY - rect.top;
-        if (Math.hypot(mx-bobX, my-bobY)<30) dragging=true;
+        if (Math.hypot(mx-bobX, my-bobY)<32) dragging=true;
       };
       canvas.onmousemove = function(e) {
         if (dragging) {
@@ -280,27 +619,23 @@
     }
     function stopPendulumSim() { cancelAnimationFrame(pendulumAnim); }
 
-    // PROJECTILE MOTION SIMULATION
+    // === Sim 3: Projectile Motion ===
     let projectileAnim, projectileLaunched = false;
     function startProjectileSim() {
-      const canvas = document.getElementById('projectileCanvas');
-      const ctx = canvas.getContext('2d');
-      let ball = { x: 60, y: canvas.height - 30, vx: 0, vy: 0, r: 14, color:'#00eaff' };
+      const canvas = document.getElementById('projectileCanvas'), ctx = canvas.getContext('2d');
+      let {gravity, bounciness} = simSettings.projectile;
+      let ball = { x: 60, y: canvas.height - 30, vx: 0, vy: 0, r: 16, color:'#00eaff' };
       let isDragging = false, startX, startY;
-      const gravity = 0.43;
       function drawBall() {
         ctx.beginPath();
         ctx.arc(ball.x, ball.y, ball.r, 0, 2*Math.PI);
         ctx.fillStyle = ball.color;
-        ctx.shadowColor = '#fff9';
-        ctx.shadowBlur = 8;
-        ctx.fill();
-        ctx.shadowBlur = 0;
-        ctx.closePath();
+        ctx.shadowColor = '#fff9'; ctx.shadowBlur = 10;
+        ctx.fill(); ctx.shadowBlur = 0; ctx.closePath();
       }
       function animate() {
+        ({gravity, bounciness} = simSettings.projectile);
         ctx.clearRect(0,0,canvas.width,canvas.height);
-        // Draw ground
         ctx.fillStyle = "#5fc96b";
         ctx.fillRect(0, canvas.height-16, canvas.width, 20);
         drawBall();
@@ -310,7 +645,7 @@
           ball.y += ball.vy;
           if (ball.y + ball.r > canvas.height-16) {
             ball.y = canvas.height-16 - ball.r;
-            ball.vy *= -0.5;
+            ball.vy *= -bounciness;
             ball.vx *= 0.6;
             if (Math.abs(ball.vy) < 1) ball.vy = 0;
           }
@@ -352,15 +687,14 @@
     }
     function stopProjectileSim() { cancelAnimationFrame(projectileAnim); }
 
-    // SPRING OSCILLATOR SIMULATION
+    // === Sim 4: Spring Oscillator ===
     let springAnim, springDragging = false;
     function startSpringSim() {
-      const canvas = document.getElementById('springCanvas');
-      const ctx = canvas.getContext('2d');
-      let anchorY = 30, massY = 180, velocity = 0, springLength = 120, mass = 1.5, k = 0.06, damping = 0.995;
+      const canvas = document.getElementById('springCanvas'), ctx = canvas.getContext('2d');
+      let {k, damping, springLength} = simSettings.spring;
+      let anchorY = 30, massY = 180, velocity = 0, mass = 1.5;
       function drawSpring() {
         ctx.clearRect(0,0,canvas.width,canvas.height);
-        // Spring
         ctx.beginPath();
         ctx.moveTo(canvas.width/2, anchorY);
         for (let i=0; i<10; i++) {
@@ -372,15 +706,14 @@
         ctx.strokeStyle = "#00eaff";
         ctx.lineWidth = 4;
         ctx.stroke();
-        // Mass
         ctx.beginPath();
         ctx.arc(canvas.width/2, massY, 22, 0, 2*Math.PI);
         ctx.fillStyle = "#ffa940";
-        ctx.shadowColor = "#fff7"; ctx.shadowBlur = 10;
-        ctx.fill(); ctx.shadowBlur = 0;
-        ctx.closePath();
+        ctx.shadowColor = "#fff7"; ctx.shadowBlur = 12;
+        ctx.fill(); ctx.shadowBlur = 0; ctx.closePath();
       }
       function animate() {
+        ({k, damping, springLength} = simSettings.spring);
         if (!springDragging) {
           let force = -k * (massY - (anchorY+springLength));
           let acc = force / mass;
@@ -408,6 +741,178 @@
       animate();
     }
     function stopSpringSim() { cancelAnimationFrame(springAnim); }
+
+    // === Sim 5: Gravity Simulator ===
+    let gravityAnim, gravityPlanets = [];
+    function startGravitySim() {
+      const canvas = document.getElementById('gravityCanvas'), ctx = canvas.getContext('2d');
+      let {G, trail} = simSettings.gravity;
+      gravityPlanets = [
+        {x: 260, y: 170, vx: 0, vy: 0, m: 220, r: 23, c: "#ffd600", static:true},
+        {x: 420, y: 170, vx: 0, vy: 2.1, m: 9, r: 7, c: "#00eaff"},
+        {x: 80, y: 170, vx: 0, vy: -1.6, m: 7, r: 6, c: "#ff4081"}
+      ];
+      let draggingIdx = null;
+      function draw() {
+        ({G, trail} = simSettings.gravity);
+        ctx.globalAlpha = trail;
+        ctx.fillStyle = (document.documentElement.getAttribute('data-theme')==="light") ? "#f9f6ff" : "#171c29";
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.globalAlpha = 1;
+        // Draw orbits (optional: can enhance)
+        for (let p of gravityPlanets) {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, 2*Math.PI);
+          ctx.fillStyle = p.c;
+          ctx.shadowColor = '#fff4'; ctx.shadowBlur = 12;
+          ctx.fill(); ctx.shadowBlur = 0; ctx.closePath();
+        }
+        // Physics
+        for (let i=0; i<gravityPlanets.length; i++) {
+          let p = gravityPlanets[i];
+          if (!p.static && draggingIdx !== i) {
+            let ax = 0, ay = 0;
+            for (let j=0; j<gravityPlanets.length; j++) if (i!==j) {
+              let o = gravityPlanets[j], dx = o.x-p.x, dy = o.y-p.y, dist = Math.hypot(dx,dy);
+              if (dist < p.r+o.r+2) continue;
+              let force = G*o.m/(dist*dist+0.01);
+              ax += force*dx/dist;
+              ay += force*dy/dist;
+            }
+            p.vx += ax;
+            p.vy += ay;
+            p.x += p.vx;
+            p.y += p.vy;
+          }
+        }
+        gravityAnim = requestAnimationFrame(draw);
+      }
+      canvas.onmousedown = function(e) {
+        const rect = canvas.getBoundingClientRect();
+        let mx = e.clientX-rect.left, my = e.clientY-rect.top;
+        for (let i=0;i<gravityPlanets.length;i++) {
+          let p = gravityPlanets[i];
+          if (Math.hypot(mx-p.x,my-p.y)<p.r+6) { draggingIdx = i; return; }
+        }
+        // Add planet
+        gravityPlanets.push({
+          x: mx, y: my,
+          vx: (Math.random()-0.5)*2, vy: (Math.random()-0.5)*2,
+          m: Math.random()*14+3, r: Math.random()*7+5,
+          c: `hsl(${Math.random()*360},90%,65%)`
+        });
+      };
+      canvas.onmousemove = function(e) {
+        if (draggingIdx !== null) {
+          const rect = canvas.getBoundingClientRect();
+          let mx = e.clientX-rect.left, my = e.clientY-rect.top;
+          let p = gravityPlanets[draggingIdx];
+          p.x = mx; p.y = my; p.vx = 0; p.vy = 0;
+        }
+      };
+      canvas.onmouseup = canvas.onmouseleave = function() { draggingIdx = null; };
+      draw();
+    }
+    function stopGravitySim() { cancelAnimationFrame(gravityAnim); }
+
+    // === Sim 6: Breakout Game ===
+    let breakoutAnim, breakoutState = {};
+    function startBreakoutSim() {
+      const canvas = document.getElementById('breakoutCanvas'), ctx = canvas.getContext('2d');
+      let {ballSpeed, paddleWidth} = simSettings.breakout;
+      let ball = {x:canvas.width/2,y:canvas.height-50,dx:ballSpeed,dy:-ballSpeed,r:10};
+      let paddle = {x:canvas.width/2-paddleWidth/2,y:canvas.height-28,w:paddleWidth};
+      let bricks=[], brickRow=5, brickCol=9, brickW=40, brickH=18, brickGap=9, lives=3, score=0, won=false, lost=false;
+      function resetBricks() {
+        bricks=[];
+        for(let r=0;r<brickRow;r++) for(let c=0;c<brickCol;c++)
+          bricks.push({x:30+c*(brickW+brickGap),y:34+r*(brickH+brickGap),hit:false});
+      }
+      resetBricks();
+      function draw() {
+        ({ballSpeed, paddleWidth} = simSettings.breakout);
+        // Background
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.globalAlpha=0.12; ctx.fillStyle="#00eaff"; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.globalAlpha=1;
+        // Bricks
+        for(let b of bricks) if(!b.hit) {
+          ctx.beginPath();
+          ctx.rect(b.x,b.y,brickW,brickH);
+          ctx.fillStyle="#ffd600";
+          ctx.shadowColor="#fff4"; ctx.shadowBlur=8; ctx.fill(); ctx.shadowBlur=0; ctx.closePath();
+        }
+        // Paddle
+        paddle.w = paddleWidth;
+        ctx.beginPath();
+        ctx.rect(paddle.x,paddle.y,paddle.w,13);
+        ctx.fillStyle="#ff4081";
+        ctx.shadowColor="#fff8"; ctx.shadowBlur=8; ctx.fill(); ctx.shadowBlur=0; ctx.closePath();
+        // Ball
+        ctx.beginPath();
+        ctx.arc(ball.x,ball.y,ball.r,0,2*Math.PI);
+        ctx.fillStyle="#00eaff";
+        ctx.shadowColor="#fff6"; ctx.shadowBlur=11; ctx.fill(); ctx.shadowBlur=0; ctx.closePath();
+        // Score/lives
+        ctx.font="bold 1rem Montserrat";
+        ctx.fillStyle="#fff";
+        ctx.fillText("Score: "+score,10,18);
+        ctx.fillText("Lives: "+lives,canvas.width-90,18);
+        if(won||lost) {
+          ctx.font="bold 1.7rem Montserrat";
+          ctx.fillStyle=won?"#ffd600":"#ff4081";
+          ctx.fillText(won?"You Win! 🎉":"Game Over!",canvas.width/2-85,canvas.height/2-10);
+          ctx.font="1.1rem Montserrat";
+          ctx.fillStyle="#fff";
+          ctx.fillText("Click to Restart",canvas.width/2-70,canvas.height/2+20);
+        }
+      }
+      function update() {
+        if(!won&&!lost) {
+          ball.x+=ball.dx; ball.y+=ball.dy;
+          // Wall
+          if(ball.x-ball.r<0||ball.x+ball.r>canvas.width) ball.dx*=-1;
+          if(ball.y-ball.r<0) ball.dy*=-1;
+          // Paddle
+          if(ball.y+ball.r>paddle.y&&ball.x>paddle.x&&ball.x<paddle.x+paddle.w) {
+            ball.dy*=-1;
+            ball.y=paddle.y-ball.r;
+            ball.dx+=(ball.x-(paddle.x+paddle.w/2))/18;
+          }
+          // Bricks
+          for(let b of bricks) if(!b.hit) {
+            if(ball.x> b.x && ball.x< b.x+brickW && ball.y-ball.r< b.y+brickH && ball.y+ball.r> b.y) {
+              b.hit=true; ball.dy*=-1; score+=10;
+              if(bricks.every(br=>br.hit)) won=true;
+              break;
+            }
+          }
+          // Out
+          if(ball.y-ball.r>canvas.height) {
+            lives--; if(lives<=0) lost=true;
+            else { ball.x=canvas.width/2; ball.y=canvas.height-50; ball.dx=ballSpeed; ball.dy=-ballSpeed; }
+          }
+        }
+        draw();
+        breakoutAnim = requestAnimationFrame(update);
+      }
+      // Paddle control
+      canvas.onmousemove = function(e) {
+        let rect=canvas.getBoundingClientRect();
+        let mx=e.clientX-rect.left;
+        paddle.x = Math.max(0,Math.min(mx-paddle.w/2,canvas.width-paddle.w));
+      };
+      canvas.ontouchmove = function(e) {
+        let rect=canvas.getBoundingClientRect();
+        let mx=e.touches[0].clientX-rect.left;
+        paddle.x = Math.max(0,Math.min(mx-paddle.w/2,canvas.width-paddle.w));
+      };
+      canvas.onclick = function() {
+        if(won||lost) { won=lost=false; lives=3; score=0; resetBricks();
+          ball.x=canvas.width/2; ball.y=canvas.height-50; ball.dx=ballSpeed; ball.dy=-ballSpeed; }
+      };
+      update();
+    }
+    function stopBreakoutSim() { cancelAnimationFrame(breakoutAnim); }
   </script>
 </body>
 </html>
